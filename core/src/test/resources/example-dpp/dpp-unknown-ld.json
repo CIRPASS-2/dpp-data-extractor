@@ -1,0 +1,90 @@
+{
+  "@context": {
+    "@vocab": "http://dpp.unknwon.ee/DPP#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "si": "https://si-digital-framework.org/SI#",
+    "modelName": "name"
+  },
+  "@graph": [
+    {
+      "@id": "http://example.com/product/smartphone-001",
+      "@type": "Model",
+      "uuid": "urn:epc:id:sgtin:0614141.112345.001",
+      "modelName": "EcoPhone X Pro",
+      "desc": "Smartphone di fascia alta con materiali riciclati al 75%",
+      "gtin": "8712345678901",
+      "commodity_code": "8517120000",
+      "manufacturer": "http://example.com/actor/manufacturer-alpha",
+      "eo": "http://example.com/actor/operator-beta",
+      "dpp": {
+        "@id": "http://example.com/dpp/smartphone-001-dpp",
+        "@type": "DPP",
+        "granularityLevel": "model",
+        "state": "Active",
+        "version": "1.7.0",
+        "validTo": {
+          "@type": "xsd:dateTimeStamp",
+          "@value": "2034-01-16T08:00:00Z"
+        },
+        "modifiedAt": {
+          "@type": "xsd:dateTimeStamp",
+          "@value": "2023-11-20T14:30:00Z"
+        },
+        "facilityID": "FAC-IT-MI-001",
+        "issuer": "http://example.com/actor/issuer-gamma"
+      },
+      "hasCharacteristic": [
+        {
+          "@id": "http://example.com/property/weight-001",
+          "@type": "Weight",
+          "value": {
+            "@type": "xsd:decimal",
+            "@value": "189.5"
+          }
+        },
+        {
+          "@id": "http://example.com/property/carbon-footprint-001",
+          "@type": "CarbonFootprint",
+          "value": {
+            "@type": "xsd:decimal",
+            "@value": "45.8"
+          }
+        },
+        {
+          "@id": "http://example.com/property/recycling-rate-001",
+          "@type": "RecyclingRate",
+          "value": {
+            "@type": "xsd:decimal",
+            "@value": "75.0"
+          },
+          "uom": {
+            "@id": "si:percent"
+          }
+        },
+        {
+          "@id": "http://example.com/property/energy-consumption-001",
+          "@type": "EnergyConsumption",
+          "value": {
+            "@type": "xsd:decimal",
+            "@value": "12.5"
+          },
+          "uom": {
+            "@id": "si:kilowatt-hour"
+          }
+        },
+        {
+          "@id": "http://example.com/property/durability-001",
+          "@type": "Durability",
+          "value": {
+            "@type": "xsd:decimal",
+            "@value": "8760"
+          },
+          "uom": {
+            "@id": "si:hour"
+          }
+        }
+      ],
+      "substancesOfConcerns": "http://example.com/soc/lithium-battery"
+    }
+  ]
+}

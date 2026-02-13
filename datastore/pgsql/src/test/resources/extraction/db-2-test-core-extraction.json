@@ -1,0 +1,64 @@
+{
+  "searchFields":[
+    {
+      "fieldName": "productName",
+      "targetType": "STRING"
+    },
+    {
+      "fieldName": "carbonFootprint",
+      "targetType": "DECIMAL"
+    }
+  ],
+  "knownOntology":{
+    "fields":
+    {
+      "productName": {
+        "reference": {
+          "key":"productName",
+          "nativeType": "STRING"
+        }
+      },
+      "carbonFootprint":{
+        "reference": {
+          "@type":"CarbonFootprint",
+          "key": "hasProperty",
+          "child": {
+            "nativeType": "DECIMAL",
+            "key":"numericalValue"
+          }
+        }
+      }
+    }
+  },
+  "noOntology": {
+    "fields":
+    {
+      "productName": {
+        "variants":["productName","modelName"],
+        "variantsWithContext":{
+          "context": ["model","product"],
+          "field": ["productName","modelName","name"]
+        }
+      },
+      "carbonFootprint": {
+        "variants": ["carbonFootprint"],
+        "variantsWithContext": {
+          "context": ["carbonFootprint"],
+          "field": ["value","totalKgCo2","kgCo2","numericalValue"]
+        }
+      }
+    }
+  },
+  "unknownOntology": {
+    "fields": {
+      "productName": {
+        "variants": ["productName","modelName","name"],
+        "typeHints": ["Product","ProductData","DPP","DPPData","Model","ModelData"]
+      },
+      "carbonFootprint": {
+        "variants": ["numericalValue", "value", "totalKgCo2"],
+        "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission"]
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "searchFields":[
+    {
+      "fieldName": "productName",
+      "targetType": "STRING"
+    }
+  ],
+  "knownOntology":{
+    "fields":
+    {
+      "productName": {
+        "reference": {
+          "key":"productName",
+          "nativeType": "STRING"
+        }
+      }
+    }
+  },
+  "noOntology": {
+    "fields":
+    {
+      "productName": {
+        "variants":["productName","modelName"],
+        "variantsWithContext":{
+          "context": ["model","product"],
+          "field": ["productName","modelName","name"]
+        }
+      }
+    }
+  },
+  "unknownOntology": {
+    "fields": {
+      "productName": {
+        "variants": ["productName","modelName","name"],
+        "typeHints": ["Product","ProductData","DPP","DPPData","Model","ModelData"]
+      }
+    }
+  }
+}

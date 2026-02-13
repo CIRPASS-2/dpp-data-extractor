@@ -1,0 +1,358 @@
+{
+  "searchFields": [
+    {
+      "fieldName": "productName",
+      "targetType": "STRING"
+    },
+    {
+      "fieldName": "codeValue",
+      "targetType": "STRING"
+    },
+    {
+      "fieldName": "codeSet",
+      "targetType": "STRING"
+    },
+    {
+      "fieldName": "environmentalFootprint",
+      "targetType": "DECIMAL"
+    },
+    {
+      "fieldName": "environmentalFootprintUom",
+      "targetType": "STRING",
+      "dependsOn": "environmentalFootprint"
+    },
+    {
+      "fieldName": "recyclingRate",
+      "targetType": "DECIMAL"
+    },
+    {
+      "fieldName": "recyclingRateUom",
+      "targetType": "STRING",
+      "dependsOn": "recyclingRate"
+    },
+    {
+      "fieldName": "energyConsumption",
+      "targetType": "DECIMAL"
+    },
+    {
+      "fieldName": "energyConsumptionUom",
+      "targetType": "STRING",
+      "dependsOn": "energyConsumption"
+    },
+    {
+      "fieldName": "weight",
+      "targetType": "DECIMAL"
+    },
+    {
+      "fieldName": "weightUom",
+      "targetType": "STRING",
+      "dependsOn": "weight"
+    },
+    {
+      "fieldName": "durability",
+      "targetType": "DECIMAL"
+    },
+    {
+      "fieldName": "durabilityUom",
+      "targetType": "STRING",
+      "dependsOn": "durability"
+    }
+  ],
+
+  "knownOntology": {
+    "fields": {
+      "productName": {
+        "reference": {
+          "key": "productName",
+          "nativeType": "STRING"
+        }
+      },
+      "codeValue": {
+        "reference": {
+          "@type": "ClassificationCode",
+          "key": "hasProductGroup",
+          "child": {
+            "key": "codeValue",
+            "nativeType": "STRING"
+          }
+        }
+      },
+      "codeSet": {
+        "reference": {
+          "@type": "ClassificationCode",
+          "key": "hasProductGroup",
+          "child": {
+            "key": "codeSet",
+            "nativeType": "STRING"
+          }
+        }
+      },
+      "environmentalFootprint": {
+        "reference": {
+          "@type": "EnvironmentalFootprint",
+          "key": "hasProperty",
+          "child": {
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
+          }
+        }
+      },
+      "environmentalFootprintUom": {
+        "reference": {
+          "@type": "EnvironmentalFootprint",
+          "key": "hasProperty",
+          "child": {
+            "key": "hasMeasurementUnit",
+            "nativeType": "STRING"
+          }
+        }
+      },
+      "recyclingRate": {
+        "reference": {
+          "@type": "RecyclingRate",
+          "key": "hasProperty",
+          "child": {
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
+          }
+        }
+      },
+      "recyclingRateUom": {
+        "reference": {
+          "@type": "RecyclingRate",
+          "key": "hasProperty",
+          "child": {
+            "key": "hasMeasurementUnit",
+            "nativeType": "STRING"
+          }
+        }
+      },
+      "energyConsumption": {
+        "reference": {
+          "@type": "EnergyConsumption",
+          "key": "hasProperty",
+          "child": {
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
+          }
+        }
+      },
+      "energyConsumptionUom": {
+        "reference": {
+          "@type": "EnergyConsumption",
+          "key": "hasProperty",
+          "child": {
+            "key": "hasMeasurementUnit",
+            "nativeType": "STRING"
+          }
+        }
+      },
+      "weight": {
+        "reference": {
+          "@type": "Weight",
+          "key": "hasProperty",
+          "child": {
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
+          }
+        }
+      },
+      "weightUom": {
+        "reference": {
+          "@type": "Weight",
+          "key": "hasProperty",
+          "child": {
+            "key": "hasMeasurementUnit",
+            "nativeType": "STRING"
+          }
+        }
+      },
+      "durability": {
+        "reference": {
+          "@type": "Durability",
+          "key": "hasProperty",
+          "child": {
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
+          }
+        }
+      },
+      "durabilityUom": {
+        "reference": {
+          "@type": "Durability",
+          "key": "hasProperty",
+          "child": {
+            "key": "hasMeasurementUnit",
+            "nativeType": "STRING"
+          }
+        }
+      }
+    }
+  },
+  "noOntology": {
+    "fields": {
+      "productName": {
+        "variants": ["productName", "modelName"],
+        "variantsWithContext": {
+          "context": ["model", "product"],
+          "field": ["productName", "modelName", "name"]
+        }
+      },
+      "codeValue": {
+        "variants": ["codeValue", "productGroupCode", "classificationCode", "categoryCode"],
+        "variantsWithContext": {
+          "context": ["productGroup", "classification", "category", "classificationCode"],
+          "field": ["code", "codeValue", "value", "id"]
+        }
+      },
+      "codeSet": {
+        "variants": ["codeSet", "classificationCodeSet", "categoryCodeSet", "codeSystem", "classificationSystem"],
+        "variantsWithContext": {
+          "context": ["productGroup", "classification", "category", "classificationCode"],
+          "field": ["codeSet", "system", "scheme", "uri", "namespace"]
+        }
+      },
+      "environmentalFootprint": {
+        "variants": ["environmentalFootprint", "envFootprint", "productFootprint"],
+        "variantsWithContext": {
+          "context": ["environmentalFootprint", "envFootprint", "footprint"],
+          "field": ["value", "numericalValue", "amount", "total"]
+        }
+      },
+      "environmentalFootprintUom": {
+        "variants": [
+          "environmentalFootprintUom", "envFootprintUom",
+          "environmentalFootprintUnitOfMeasure", "envFootprintUnitOfMeasure",
+          "environmentalFootprintMeasurementUnit"
+        ],
+        "variantsWithContext": {
+          "context": ["environmentalFootprint", "envFootprint", "footprint"],
+          "field": ["uom", "unitOfMeasure", "measurementUnit", "unit"]
+        }
+      },
+      "recyclingRate": {
+        "variants": ["recyclingRate", "recyclingRateValue", "recyclingPercentage"],
+        "variantsWithContext": {
+          "context": ["recycling", "recyclingRate", "circularEconomy"],
+          "field": ["value", "numericalValue", "rate", "percentage", "amount"]
+        }
+      },
+      "recyclingRateUom": {
+        "variants": [
+          "recyclingRateUom", "recyclingRateUnitOfMeasure",
+          "recyclingRateMeasurementUnit", "recyclingPercentageUom"
+        ],
+        "variantsWithContext": {
+          "context": ["recyclingRate", "recycling"],
+          "field": ["uom", "unitOfMeasure", "measurementUnit", "unit"]
+        }
+      },
+      "energyConsumption": {
+        "variants": ["energyConsumption", "energyUse", "powerConsumption", "energyUsage"],
+        "variantsWithContext": {
+          "context": ["energy", "energyConsumption", "power"],
+          "field": ["value", "numericalValue", "consumption", "amount", "total"]
+        }
+      },
+      "energyConsumptionUom": {
+        "variants": [
+          "energyConsumptionUom", "energyUseUom",
+          "energyConsumptionUnitOfMeasure", "energyUseUnitOfMeasure",
+          "energyConsumptionMeasurementUnit"
+        ],
+        "variantsWithContext": {
+          "context": ["energyConsumption", "energyUse", "energy"],
+          "field": ["uom", "unitOfMeasure", "measurementUnit", "unit"]
+        }
+      },
+      "weight": {
+        "variants": ["weight", "weightG", "weightKg"],
+        "variantsWithContext": {
+          "context": ["dimension", "dimensions", "physicalDimension"],
+          "field": ["weight", "weightG", "weightKg"]
+        }
+      },
+      "weightUom": {
+        "variants": ["weightUom", "weightUnitOfMeasure", "weightMeasurementUnit"],
+        "variantsWithContext": {
+          "context": ["weight", "dimensionW"],
+          "field": ["uom", "unitOfMeasure", "measurementUnit", "unit"]
+        }
+      },
+      "durability": {
+        "variants": ["durability", "durabilityValue", "lifespan", "expectedLifespan", "productLifespan"],
+        "variantsWithContext": {
+          "context": ["durability", "quality", "qualityIndicator", "lifespan"],
+          "field": ["value", "numericalValue", "years", "amount", "lifespan"]
+        }
+      },
+      "durabilityUom": {
+        "variants": [
+          "durabilityUom", "durabilityUnitOfMeasure",
+          "durabilityMeasurementUnit", "lifespanUom", "lifespanUnit"
+        ],
+        "variantsWithContext": {
+          "context": ["durability", "lifespan"],
+          "field": ["uom", "unitOfMeasure", "measurementUnit", "unit"]
+        }
+      }
+    }
+  },
+
+  "unknownOntology": {
+    "fields": {
+      "productName": {
+        "variants": ["productName", "modelName", "name"],
+        "typeHints": ["Product", "ProductData", "DPP", "DPPData", "Model", "ModelData"]
+      },
+      "codeValue": {
+        "variants": ["codeValue", "code", "value", "id"],
+        "typeHints": ["ClassificationCode", "ProductGroup", "ProductCategory", "Category"]
+      },
+      "codeSet": {
+        "variants": ["codeSet", "system", "scheme", "uri", "namespace"],
+        "typeHints": ["ClassificationCode", "ProductGroup", "ProductCategory", "Category"]
+      },
+      "environmentalFootprint": {
+        "variants": ["numericalValue", "value", "amount", "total"],
+        "typeHints": ["EnvironmentalFootprint", "EnvFootprint", "ProductFootprint", "Footprint"]
+      },
+      "environmentalFootprintUom": {
+        "variants": ["hasMeasurementUnit", "unit", "uom", "unitOfMeasure"],
+        "typeHints": ["EnvironmentalFootprint", "EnvFootprint", "ProductFootprint", "Footprint"]
+      },
+      "recyclingRate": {
+        "variants": ["numericalValue", "value", "rate", "percentage", "amount"],
+        "typeHints": ["RecyclingRate", "RecyclingIndicator", "CircularEconomyIndicator", "RecyclingPercentage"]
+      },
+      "recyclingRateUom": {
+        "variants": ["hasMeasurementUnit", "unit", "uom", "unitOfMeasure"],
+        "typeHints": ["RecyclingRate", "RecyclingIndicator", "CircularEconomyIndicator"]
+      },
+      "energyConsumption": {
+        "variants": ["numericalValue", "value", "consumption", "amount", "total"],
+        "typeHints": ["EnergyConsumption", "EnergyUse", "PowerConsumption", "EnergyUsage"]
+      },
+      "energyConsumptionUom": {
+        "variants": ["hasMeasurementUnit", "unit", "uom", "unitOfMeasure"],
+        "typeHints": ["EnergyConsumption", "EnergyUse", "PowerConsumption"]
+      },
+      "weight": {
+        "variants": ["numericalValue", "value", "amount"],
+        "typeHints": ["Weight", "QuantitativeValue", "MassValue"]
+      },
+      "weightUom": {
+        "variants": ["hasMeasurementUnit", "unit", "uom", "unitOfMeasure"],
+        "typeHints": ["Weight", "QuantitativeValue", "MassValue"]
+      },
+      "durability": {
+        "variants": ["numericalValue", "value", "years", "lifespan", "amount"],
+        "typeHints": ["Durability", "ProductDurability", "LifeExpectancy", "QualityIndicator"]
+      },
+      "durabilityUom": {
+        "variants": ["hasMeasurementUnit", "unit", "uom", "unitOfMeasure"],
+        "typeHints": ["Durability", "ProductDurability", "LifeExpectancy"]
+      }
+    }
+  }
+}

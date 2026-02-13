@@ -1,0 +1,110 @@
+{
+  "searchFields":[
+    {
+      "fieldName": "productName",
+      "targetType": "STRING"
+    },
+    {
+      "fieldName": "weight",
+      "targetType": "DECIMAL"
+    },
+    {
+      "fieldName": "carbonFootprint",
+      "targetType": "DECIMAL"
+    },
+    {
+      "fieldName": "height",
+      "targetType": "DECIMAL"
+    }
+  ],
+  "knownOntology":{
+    "fields":
+    {
+      "productName": {
+        "reference": {
+          "key":"productName",
+          "nativeType": "STRING"
+        }
+      },
+      "weight": {
+        "reference": {
+        "@type":"Weight",
+        "key": "hasProperty",
+        "child": {
+          "key":"numericalValue",
+          "nativeType": "DECIMAL"
+        }
+          }
+      },
+      "carbonFootprint":{
+        "reference": {
+          "@type":"CarbonFootprint",
+          "key": "hasProperty",
+          "child": {
+            "nativeType": "DECIMAL",
+            "key":"numericalValue"
+          }
+        }
+      },
+      "height":{
+        "reference": {
+          "@type": "Height",
+          "key": "hasProperty",
+          "child": {
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
+          }
+        }
+      }
+    }
+  },
+  "noOntology": {
+    "fields":
+    {
+      "productName": {
+        "variants":["productName","modelName"],
+        "variantsWithContext":{
+          "context": ["model","product"],
+          "field": ["productName","modelName","name"]
+        }
+      },
+      "weight": {
+        "variants": ["weight","weightG","weightKg"],
+        "variantsWithContext": {
+          "context": ["dimension"],
+          "field": ["weight","weightg","weightkg"]
+        }
+      },
+      "carbonFootprint": {
+        "variants": ["carbonFootprint"],
+        "variantsWithContext": {
+          "context": ["carbonFootprint"],
+          "field": ["value","totalKgCo2","kgCo2","numericalValue"]
+        }
+      },
+      "height": {
+        "variants": ["height","heightcm","heightdm","heightm"]
+      }
+    }
+  },
+  "unknownOntology": {
+    "fields": {
+      "productName": {
+        "variants": ["productName","modelName","name"],
+        "typeHints": ["Product","ProductData","DPP","DPPData","Model","ModelData"]
+      },
+      "weight": {
+        "variants": ["numericalValue", "value", "amount"],
+        "typeHints": ["Weight", "QuantitativeValue", "MassValue"]
+      },
+      "carbonFootprint": {
+        "variants": ["numericalValue", "value", "totalKgCo2"],
+        "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission"]
+      },
+      "height": {
+        "variants": ["numericalValue","value","amount"],
+        "typeHints": ["Height","QuantitativeValue"]
+      }
+    }
+  }
+}
