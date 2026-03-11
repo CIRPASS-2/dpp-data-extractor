@@ -21,9 +21,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import org.eclipse.microprofile.openapi.annotations.Operation;
-
 import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 /**
  * Resource interface to retrieve the search capabilities of the extractor, namely the {@link
@@ -39,6 +38,9 @@ public interface SearchCapabilitiesResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns the search capabilities of the search data repository.",description = "Returns the search capabilities of the search data repository i.e. the list and type of search field extracted from the extractor.")
+    @Operation(
+            summary = "Returns the search capabilities of the search data repository.",
+            description =
+                    "Returns the search capabilities of the search data repository i.e. the list and type of search field extracted from the extractor.")
     Uni<List<SearchField>> getSearchCapabilities();
 }

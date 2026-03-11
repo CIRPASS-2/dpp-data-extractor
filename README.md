@@ -625,13 +625,17 @@ The application ships with a default configuration that extracts the following f
       "targetType": "STRING"
     },
     {
-      "fieldName": "environmentalFootprint",
+      "fieldName": "manufacturerName",
+      "targetType": "STRING"
+    },
+    {
+      "fieldName": "carbonFootprint",
       "targetType": "DECIMAL"
     },
     {
-      "fieldName": "environmentalFootprintUom",
+      "fieldName": "carbonFootprintUom",
       "targetType": "STRING",
-      "dependsOn": "environmentalFootprint"
+      "dependsOn": "carbonFootprint"
     },
     {
       "fieldName": "recyclingRate",
@@ -670,6 +674,7 @@ The application ships with a default configuration that extracts the following f
       "dependsOn": "durability"
     }
   ],
+
   "knownOntology": {
     "fields": {
       "productName": {
@@ -698,9 +703,19 @@ The application ships with a default configuration that extracts the following f
           }
         }
       },
-      "environmentalFootprint": {
+      "manufacturerName": {
         "reference": {
-          "@type": "EnvironmentalFootprint",
+          "@type": "Actor",
+          "key": "hasManufacturer",
+          "child": {
+            "key": "actorName",
+            "nativeType": "STRING"
+          }
+        }
+      },
+      "carbonFootprint": {
+        "reference": {
+          "@type": "CarbonFootprint",
           "key": "hasProperty",
           "child": {
             "key": "numericalValue",
@@ -708,9 +723,9 @@ The application ships with a default configuration that extracts the following f
           }
         }
       },
-      "environmentalFootprintUom": {
+      "carbonFootprintUom": {
         "reference": {
-          "@type": "EnvironmentalFootprint",
+          "@type": "CarbonFootprint",
           "key": "hasProperty",
           "child": {
             "key": "hasMeasurementUnit",
@@ -823,21 +838,28 @@ The application ships with a default configuration that extracts the following f
           "field": ["codeSet", "system", "scheme", "uri", "namespace"]
         }
       },
-      "environmentalFootprint": {
-        "variants": ["environmentalFootprint", "envFootprint", "productFootprint"],
+      "manufacturerName": {
+        "variants": ["manufacturerName", "manufacturer", "producerName", "brandName", "companyName"],
         "variantsWithContext": {
-          "context": ["environmentalFootprint", "envFootprint", "footprint"],
-          "field": ["value", "numericalValue", "amount", "total"]
+          "context": ["manufacturer", "producer", "brand", "actor", "economicOperator"],
+          "field": ["actorName", "name", "manufacturerName", "companyName", "registeredTradeName"]
         }
       },
-      "environmentalFootprintUom": {
+      "carbonFootprint": {
+        "variants": ["carbonFootprint", "carbonEmission", "co2Footprint", "totalKgCo2", "kgCo2"],
+        "variantsWithContext": {
+          "context": ["carbonFootprint", "co2", "carbonEmission", "kgCo2"],
+          "field": ["value", "numericalValue", "amount", "total", "totalKgCo2"]
+        }
+      },
+      "carbonFootprintUom": {
         "variants": [
-          "environmentalFootprintUom", "envFootprintUom",
-          "environmentalFootprintUnitOfMeasure", "envFootprintUnitOfMeasure",
-          "environmentalFootprintMeasurementUnit"
+          "carbonFootprintUom", "kgCo2Uom", "totalKgCo2Uom",
+          "carbonFootprintUnitOfMeasure", "kgCo2UnitOfMeasure",
+          "carbonFootprintMeasurementUnit", "kgCo2MeasurementUnit"
         ],
         "variantsWithContext": {
-          "context": ["environmentalFootprint", "envFootprint", "footprint"],
+          "context": ["carbonFootprint", "co2", "carbonEmission", "kgCo2", "totalKgCo2"],
           "field": ["uom", "unitOfMeasure", "measurementUnit", "unit"]
         }
       },
@@ -909,6 +931,7 @@ The application ships with a default configuration that extracts the following f
       }
     }
   },
+
   "unknownOntology": {
     "fields": {
       "productName": {
@@ -923,13 +946,17 @@ The application ships with a default configuration that extracts the following f
         "variants": ["codeSet", "system", "scheme", "uri", "namespace"],
         "typeHints": ["ClassificationCode", "ProductGroup", "ProductCategory", "Category"]
       },
-      "environmentalFootprint": {
-        "variants": ["numericalValue", "value", "amount", "total"],
-        "typeHints": ["EnvironmentalFootprint", "EnvFootprint", "ProductFootprint", "Footprint"]
+      "manufacturerName": {
+        "variants": ["actorName", "name", "manufacturerName", "companyName", "registeredTradeName"],
+        "typeHints": ["Actor", "Manufacturer", "ManufacturerRole", "LegalPerson", "Company", "Organisation"]
       },
-      "environmentalFootprintUom": {
+      "carbonFootprint": {
+        "variants": ["numericalValue", "value", "amount", "total", "totalKgCo2"],
+        "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission", "GHGEmission"]
+      },
+      "carbonFootprintUom": {
         "variants": ["hasMeasurementUnit", "unit", "uom", "unitOfMeasure"],
-        "typeHints": ["EnvironmentalFootprint", "EnvFootprint", "ProductFootprint", "Footprint"]
+        "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission", "GHGEmission"]
       },
       "recyclingRate": {
         "variants": ["numericalValue", "value", "rate", "percentage", "amount"],
