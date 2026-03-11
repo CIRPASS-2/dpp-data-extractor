@@ -289,8 +289,8 @@
       "weight": {
         "variants": ["weight", "weightG", "weightKg"],
         "variantsWithContext": {
-          "context": ["dimension", "dimensions", "physicalDimension"],
-          "field": ["weight", "weightG", "weightKg"]
+          "context": ["dimension", "weight","dimensions", "physicalDimension"],
+          "field": ["weight", "weightG", "weightKg","numericalValue"]
         }
       },
       "weightUom": {
