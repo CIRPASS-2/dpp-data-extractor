@@ -154,7 +154,7 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
             results.put(
                     targetName,
                     convertToTargetType(jsonObject.get(VALUE), targetTypes.get(targetName)));
-        else if (jsonObject.size() == 1 && jsonObject.containsKey(ID))
+        else if (jsonObject.containsKey(ID))
             results.put(
                     targetName,
                     convertToTargetType(jsonObject.get(ID), targetTypes.get(targetName)));
