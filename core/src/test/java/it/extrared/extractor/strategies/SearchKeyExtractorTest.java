@@ -35,9 +35,9 @@ public class SearchKeyExtractorTest {
                     () -> result,
                     r -> {
                         assertEquals(4, r.size());
-                        assertEquals("EcoBattery Ultra 5000mAh", r.get("name"));
-                        assertEquals(12.4, ((Number) r.get("total_kg_co2")).doubleValue());
-                        assertEquals(45d, ((Number) r.get("weight")).doubleValue());
+                        assertEquals("EcoBattery Ultra 5000mAh", r.get("productName"));
+                        assertEquals(12.4, ((Number) r.get("carbonFootprint")).doubleValue());
+                        assertEquals(85.3, ((Number) r.get("weight")).doubleValue());
                         assertEquals("batch", r.get("granularity"));
                     });
         }

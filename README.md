@@ -901,7 +901,7 @@ The application ships with a default configuration that extracts the following f
       "weight": {
         "variants": ["weight", "weightG", "weightKg"],
         "variantsWithContext": {
-          "context": ["dimension", "dimensions", "physicalDimension"],
+          "context": ["dimension", "dimensions", "physicalDimension","weight"],
           "field": ["weight", "weightG", "weightKg"]
         }
       },

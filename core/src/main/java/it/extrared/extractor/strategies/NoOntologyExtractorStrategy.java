@@ -76,25 +76,27 @@ public class NoOntologyExtractorStrategy implements SearchKeyExtractorStrategy {
             for (Map.Entry<String, NoOntologyFieldSpec> e : specs.entrySet()) {
                 if (matchVariant(k, e.getValue().getVariants())) {
                     if (value.getValueType() != JsonValue.ValueType.ARRAY
-                            && value.getValueType() != JsonValue.ValueType.OBJECT)
-                        results.put(
+                            && value.getValueType() != JsonValue.ValueType.OBJECT) {
+                        results.putIfAbsent(
                                 e.getKey(),
-                                JsonUtils.convertToTargetType(object.get(k), targetTypes.get(k)));
-                }
-                if (e.getValue().getVariantsWithContext() != null) {
-                    VariantsWithContext context = e.getValue().getVariantsWithContext();
-                    if (context != null && matchVariant(k, context.getContext())) {
-                        if (value.getValueType() == JsonValue.ValueType.ARRAY)
-                            findUnderContext(results, value.asJsonArray(), targetTypes, context);
-                        else if (value.getValueType() == JsonValue.ValueType.OBJECT)
-                            findUnderContext(results, value.asJsonObject(), targetTypes, context);
-                        else
-                            warn(
-                                    LOGGER,
-                                    () ->
-                                            "Skipping a non array and non object json to search in context retrieved with key %s"
-                                                    .formatted(k));
+                                JsonUtils.convertToTargetType(
+                                        object.get(k), targetTypes.get(e.getKey())));
                     }
+                }
+                VariantsWithContext context = e.getValue().getVariantsWithContext();
+                if (context != null && matchVariant(k, context.getContext())) {
+                    if (value.getValueType() == JsonValue.ValueType.ARRAY)
+                        findUnderContext(
+                                results, value.asJsonArray(), targetTypes, context, e.getKey());
+                    else if (value.getValueType() == JsonValue.ValueType.OBJECT)
+                        findUnderContext(
+                                results, value.asJsonObject(), targetTypes, context, e.getKey());
+                    else
+                        warn(
+                                LOGGER,
+                                () ->
+                                        "Skipping a non array and non object json to search in context retrieved with key %s"
+                                                .formatted(k));
                 }
             }
             if (value.getValueType() == JsonValue.ValueType.OBJECT)
@@ -133,10 +135,15 @@ public class NoOntologyExtractorStrategy implements SearchKeyExtractorStrategy {
             Map<String, Object> results,
             JsonObject object,
             Map<String, FieldType> targetTypes,
-            VariantsWithContext variantsWithContext) {
+            VariantsWithContext variantsWithContext,
+            String searchFieldName) {
         for (String k : object.keySet()) {
-            if (matchVariant(k, variantsWithContext.getField()))
-                results.put(k, JsonUtils.convertToTargetType(object.get(k), targetTypes.get(k)));
+            if (matchVariant(k, variantsWithContext.getField())) {
+                results.putIfAbsent(
+                        searchFieldName,
+                        JsonUtils.convertToTargetType(
+                                object.get(k), targetTypes.get(searchFieldName)));
+            }
         }
     }
 
@@ -144,10 +151,16 @@ public class NoOntologyExtractorStrategy implements SearchKeyExtractorStrategy {
             Map<String, Object> results,
             JsonArray array,
             Map<String, FieldType> targetTypes,
-            VariantsWithContext variantsWithContext) {
+            VariantsWithContext variantsWithContext,
+            String searchFieldName) {
         for (JsonValue value : array) {
             if (value.getValueType() == JsonValue.ValueType.OBJECT) {
-                findUnderContext(results, value.asJsonObject(), targetTypes, variantsWithContext);
+                findUnderContext(
+                        results,
+                        value.asJsonObject(),
+                        targetTypes,
+                        variantsWithContext,
+                        searchFieldName);
             } else {
                 warn(
                         LOGGER,
