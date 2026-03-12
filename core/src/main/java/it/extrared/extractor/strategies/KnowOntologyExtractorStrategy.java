@@ -33,8 +33,14 @@ import java.util.*;
 import org.jboss.logging.Logger;
 
 /**
- * Extraction strategy that use the {@link it.extrared.extractor.config.KnownOntology} configuration
- * to retrieve DPP data.
+ * Extraction strategy that uses the {@link it.extrared.extractor.config.KnownOntology}
+ * configuration to retrieve DPP data.
+ *
+ * <p>Builds a graph index (@id → JsonObject) upfront so that IRI-only reference nodes (e.g. {@code
+ * {"@id": "http://..."}}) are resolved to their full representation before matching types and
+ * extracting values. Without this, any property whose value is a reference to another node in the
+ * graph (hasManufacturer, hasProperty, etc.) would never be resolved and its children would never
+ * be extracted.
  */
 @ApplicationScoped
 public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy {
@@ -53,16 +59,61 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
             JsonArray array = JsonLd.expand(jsonDocument).get();
             Map<String, FieldType> types = configuration.searchFieldsAsMap();
             Map<String, Object> results = new HashMap<>();
+
+            // Build a flat index of all named nodes so IRI-only refs can be resolved
+            Map<String, JsonObject> graph = buildGraphIndex(array);
+
             traverseAndPopulate(
-                    array, configuration.getKnownOntology().getFields(), types, results);
+                    array, graph, configuration.getKnownOntology().getFields(), types, results);
             return Uni.createFrom().item(results);
         } catch (JsonLdError e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Builds a map of {@code @id → JsonObject} from the top-level array of the expanded JSON-LD
+     * document. Used to resolve IRI-only reference nodes.
+     */
+    private Map<String, JsonObject> buildGraphIndex(JsonArray array) {
+        Map<String, JsonObject> index = new HashMap<>();
+        for (JsonValue v : array) {
+            if (v.getValueType() != JsonValue.ValueType.OBJECT) continue;
+            JsonObject obj = v.asJsonObject();
+            JsonValue id = obj.get(ID);
+            if (id instanceof JsonString js) {
+                index.put(js.getString(), obj);
+            }
+        }
+        return index;
+    }
+
+    /**
+     * Returns true if the object is an IRI-only reference node, i.e. it has only {@code @id} and no
+     * other meaningful properties (no {@code @type}, no data).
+     */
+    private boolean isIriOnly(JsonObject obj) {
+        return obj.containsKey(ID)
+                && obj.keySet().stream().allMatch(k -> k.equals(ID) || k.equals(TYPE))
+                && !obj.containsKey(TYPE);
+    }
+
+    /**
+     * If the given object is an IRI-only ref, attempts to resolve it from the graph index. Returns
+     * the resolved full node, or the original object if not found.
+     */
+    private JsonObject resolve(JsonObject obj, Map<String, JsonObject> graph) {
+        if (!isIriOnly(obj)) return obj;
+        JsonValue idVal = obj.get(ID);
+        if (idVal instanceof JsonString js) {
+            return graph.getOrDefault(js.getString(), obj);
+        }
+        return obj;
+    }
+
     private void traverseAndPopulate(
             JsonArray array,
+            Map<String, JsonObject> graph,
             Map<String, KnownOntologyFieldSpec> fields,
             Map<String, FieldType> types,
             Map<String, Object> result) {
@@ -70,7 +121,7 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
             KnownOntologyFieldSpec spec = e.getValue();
             for (JsonValue value : array) {
                 JsonObject o = value.asJsonObject();
-                getFromObjectOrWalk(result, o, null, types, e.getKey(), spec.getReference());
+                getFromObjectOrWalk(result, o, null, graph, types, e.getKey(), spec.getReference());
             }
         }
     }
@@ -79,13 +130,18 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
             Map<String, Object> result,
             JsonObject jsonObject,
             String type,
+            Map<String, JsonObject> graph,
             Map<String, FieldType> targetTypes,
             String targetName,
             KnownOntologyFieldRef ref) {
-        JsonValue atType = jsonObject.get(TYPE);
+
+        JsonObject resolved = resolve(jsonObject, graph);
+
+        JsonValue atType = resolved.get(TYPE);
         if (!matchType(atType, type)) return;
+
         Optional<String> opK =
-                jsonObject.keySet().stream()
+                resolved.keySet().stream()
                         .filter(
                                 k ->
                                         k != null
@@ -93,7 +149,9 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
                                                         .endsWith(ref.getKey().toUpperCase()))
                         .findFirst();
         if (opK.isEmpty()) return;
-        JsonValue jsonValue = jsonObject.get(opK.get());
+
+        JsonValue jsonValue = resolved.get(opK.get());
+
         if (jsonValue != null
                 && jsonValue.getValueType() != JsonValue.ValueType.NULL
                 && ref instanceof ParentKnownOntologyFieldRef pr) {
@@ -103,6 +161,7 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
                         result,
                         jsonValue.asJsonObject(),
                         pr.getType(),
+                        graph,
                         targetTypes,
                         targetName,
                         childSpec);
@@ -111,6 +170,7 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
                         result,
                         jsonValue.asJsonArray(),
                         pr.getType(),
+                        graph,
                         targetTypes,
                         targetName,
                         childSpec);
@@ -118,7 +178,7 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
                 warn(
                         LOGGER,
                         () ->
-                                "Retrieved a value by key %s with type %s that is marked as container. However it is neither a JSON object neither a JSON array."
+                                "Retrieved a value by key %s with type %s that is marked as container. However it is neither a JSON object nor a JSON array."
                                         .formatted(pr.getKey(), pr.getType()));
             }
         } else if (jsonValue != null) {
@@ -126,6 +186,22 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
                 JsonArray array = jsonValue.asJsonArray();
                 for (JsonValue value : array)
                     tryGetValue(result, value.asJsonObject(), targetTypes, targetName);
+            }
+        }
+    }
+
+    private void getFromArrayOrWalk(
+            Map<String, Object> result,
+            JsonArray jsonArray,
+            String type,
+            Map<String, JsonObject> graph,
+            Map<String, FieldType> targetTypes,
+            String targetName,
+            KnownOntologyFieldRef ref) {
+        for (JsonValue el : jsonArray) {
+            if (el.getValueType() == JsonValue.ValueType.OBJECT) {
+                getFromObjectOrWalk(
+                        result, el.asJsonObject(), type, graph, targetTypes, targetName, ref);
             }
         }
     }
@@ -158,20 +234,5 @@ public class KnowOntologyExtractorStrategy implements SearchKeyExtractorStrategy
             results.put(
                     targetName,
                     convertToTargetType(jsonObject.get(ID), targetTypes.get(targetName)));
-    }
-
-    private void getFromArrayOrWalk(
-            Map<String, Object> result,
-            JsonArray jsonArray,
-            String type,
-            Map<String, FieldType> targetTypes,
-            String targetName,
-            KnownOntologyFieldRef ref) {
-        for (JsonValue el : jsonArray) {
-            if (el.getValueType() == JsonValue.ValueType.OBJECT) {
-                JsonObject object = el.asJsonObject();
-                getFromObjectOrWalk(result, object, type, targetTypes, targetName, ref);
-            }
-        }
     }
 }
