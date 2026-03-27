@@ -200,11 +200,11 @@ CREATE TABLE IF NOT EXISTS json_configs (
 | Variable                                        | Environment Variable                            | Description                                                                                         | Default                                                    |
 |-------------------------------------------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------|
 | `extractor.upi-field-name`                      | `EXTRACTOR_UPI_FIELD_NAME`                      | Field name in the registry entry for the Unique Product Identifier                                  | `upi`                                                      |
-| `extractor.live-URL-field-name`                 | `EXTRACTOR_LIVE_URL_FIELD_NAME`                 | Field name in the registry entry for the live DPP URL                                               | `liveURL`                                                  |
-| `extractor.granularity-level-field-name`        | `EXTRACTOR_GRANULARITY_LEVEL_FIELD_NAME`        | Field name in the registry entry for the granularity level                                          | `granularityLevel`                                         |
+| `extractor.live-url-field-name`                 | `EXTRACTOR_LIVE_URL_FIELD_NAME`                 | Field name in the registry entry for the live DPP URL                                               | `liveURL`                                                  |
+| `extractor.granularity-field-name`              | `EXTRACTOR_GRANULARITY_FIELD_NAME`              | Field name in the registry entry for the granularity level                                          | `granularityLevel`                                         |
 | `extractor.role-mappings`                       | `EXTRACTOR_ROLE_MAPPINGS`                       | Comma-separated mappings between external IdP roles and internal roles                              | `admin:admin,eo:eo,eu:eu`                                  |
 | `extractor.extraction-config-location`          | `EXTRACTOR_EXTRACTION_CONFIG_LOCATION`          | Location of a custom extraction configuration (URL, file URI, or absolute path)                     | -                                                          |
-| `extractor.max.retrials`                        | `EXTRACTOR_MAX_RETRIALS`                        | Maximum number of retry attempts for a failed extraction operation on a specific registry entry     | `3`                                                        |
+| `extractor.max-retrials`                        | `EXTRACTOR_MAX_RETRIALS`                        | Maximum number of retry attempts for a failed extraction operation on a specific registry entry     | `3`                                                        |
 | `start.extractor.every`                         | `START_EXTRACTOR_EVERY`                         | Polling interval for the extractor job (number + time unit, e.g. `30s`, `5m`)                       | `5s`                                                       |
 | `extractor.dpp.reference-ontology.contexts`     | `EXTRACTOR_DPP_REFERENCE_ONTOLOGY_CONTEXTS`     | Context URIs used to identify JSON-LD documents compliant with the reference ontology               | -                                                          |
 | `extractor.dpp.reference-ontology.vocabularies` | `EXTRACTOR_DPP_REFERENCE_ONTOLOGY_VOCABULARIES` | Vocabulary URIs (`@vocab`) used to identify JSON-LD documents compliant with the reference ontology | `http://dpp.taltech.ee/EUDPP#,http://dpp.taltech.ee/EUDPP` |
@@ -263,11 +263,11 @@ quarkus.oidc.roles.role-claim-path=group,realm_access.roles
 
 # Application
 extractor.upi-field-name=upi
-extractor.live-URL-field-name=liveURL
-extractor.granularity-level-field-name=granularityLevel
+extractor.live-url-field-name=liveURL
+extractor.granularity-field-name=granularityLevel
 extractor.role-mappings=keycloak_admin:admin,keycloak_operator:eo,keycloak_user:eu
 extractor.extraction-config-location=/etc/extractor/config.json
-extractor.max.retrials=3
+extractor.max-retrials=3
 start.extractor.every=30s
 extractor.dpp.reference-ontology.vocabularies=http://dpp.taltech.ee/EUDPP#,http://dpp.taltech.ee/EUDPP
 ```
@@ -295,11 +295,11 @@ quarkus.oidc.roles.role-claim-path=group,realm_access.roles
 
 # Application
 extractor.upi-field-name=upi
-extractor.live-URL-field-name=liveURL
-extractor.granularity-level-field-name=granularityLevel
+extractor.live-url-field-name=liveURL
+extractor.granularity-field-name=granularityLevel
 extractor.role-mappings=keycloak_admin:admin,keycloak_operator:eo,keycloak_user:eu
 extractor.extraction-config-location=/etc/extractor/config.json
-extractor.max.retrials=3
+extractor.max-retrials=3
 start.extractor.every=30s
 extractor.dpp.reference-ontology.vocabularies=http://dpp.taltech.ee/EUDPP#,http://dpp.taltech.ee/EUDPP
 ```
@@ -336,7 +336,7 @@ services:
       # Application
       EXTRACTOR_UPI_FIELD_NAME: upi
       EXTRACTOR_LIVE_URL_FIELD_NAME: liveURL
-      EXTRACTOR_GRANULARITY_LEVEL_FIELD_NAME: granularityLevel
+      EXTRACTOR_GRANULARITY_FIELD_NAME: granularityLevel
       EXTRACTOR_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_operator:eo,keycloak_user:eu
       EXTRACTOR_EXTRACTION_CONFIG_LOCATION: /etc/extractor/config.json
       EXTRACTOR_MAX_RETRIALS: 3
@@ -394,7 +394,7 @@ services:
       # Application
       EXTRACTOR_UPI_FIELD_NAME: upi
       EXTRACTOR_LIVE_URL_FIELD_NAME: liveURL
-      EXTRACTOR_GRANULARITY_LEVEL_FIELD_NAME: granularityLevel
+      EXTRACTOR_GRANULARITY_FIELD_NAME: granularityLevel
       EXTRACTOR_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_operator:eo,keycloak_user:eu
       EXTRACTOR_EXTRACTION_CONFIG_LOCATION: /etc/extractor/config.json
       EXTRACTOR_MAX_RETRIALS: 3
@@ -440,7 +440,7 @@ data:
   QUARKUS_OIDC_ROLES_ROLE_CLAIM_PATH: "group,realm_access.roles"
   EXTRACTOR_UPI_FIELD_NAME: "upi"
   EXTRACTOR_LIVE_URL_FIELD_NAME: "liveURL"
-  EXTRACTOR_GRANULARITY_LEVEL_FIELD_NAME: "granularityLevel"
+  EXTRACTOR_GRANULARITY_FIELD_NAME: "granularityLevel"
   EXTRACTOR_ROLE_MAPPINGS: "keycloak_admin:admin,keycloak_operator:eo,keycloak_user:eu"
   EXTRACTOR_EXTRACTION_CONFIG_LOCATION: "/etc/extractor/config.json"
   EXTRACTOR_MAX_RETRIALS: "3"
