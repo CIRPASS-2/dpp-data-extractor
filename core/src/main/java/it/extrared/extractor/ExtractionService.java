@@ -35,10 +35,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.jboss.logging.Logger;
 
 /** Service class that performs the extraction process. */
@@ -126,7 +123,11 @@ public class ExtractionService {
         List<Uni<SearchData>> searches = metadataL.stream().map(this::getSearchData).toList();
         if (searches.isEmpty()) return Uni.createFrom().voidItem();
         Uni<List<SearchData>> combined =
-                Uni.combine().all().unis(searches).with(ls -> (List<SearchData>) ls);
+                Uni.combine()
+                        .all()
+                        .unis(searches)
+                        .with(ls -> (List<SearchData>) ls)
+                        .map(l -> l.stream().filter(Objects::nonNull).toList());
         return combined.flatMap(
                 l ->
                         exPool.withTransaction(
@@ -143,15 +144,30 @@ public class ExtractionService {
         Uni<byte[]> dpp = dppFetcher.fetchDPP(metadataEntry.getLiveURL());
         Uni<Map<String, Object>> result =
                 dpp.flatMap(b -> extractor.extractSearchKeys(new ByteArrayInputStream(b)));
-        return result.map(m -> toSearchData(metadataEntry, m))
-                .onFailure()
-                .call(
-                        e -> {
-                            LOGGER.error(
-                                    "Error while trying to extract search data from live url %s"
-                                            .formatted(metadataEntry.getLiveURL()));
-                            return updateFailure(metadataEntry.getRegistryId());
-                        });
+        Uni<SearchData> searchDataUni = result.map(m -> toSearchData(metadataEntry, m));
+        searchDataUni =
+                searchDataUni
+                        .onFailure()
+                        .call(
+                                e -> {
+                                    LOGGER.error(
+                                            "Error while trying to extract search data from live url %s"
+                                                    .formatted(metadataEntry.getLiveURL()),
+                                            e); // passa anche l'eccezione al logger
+                                    return updateFailure(metadataEntry.getRegistryId())
+                                            .onFailure()
+                                            .invoke(
+                                                    dbErr ->
+                                                            LOGGER.error(
+                                                                    "Failed to update failure status for %s"
+                                                                            .formatted(
+                                                                                    metadataEntry
+                                                                                            .getRegistryId()),
+                                                                    dbErr));
+                                })
+                        .onFailure()
+                        .recoverWithNull();
+        return searchDataUni;
     }
 
     private Uni<Void> updateFailure(String registryId) {
