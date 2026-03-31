@@ -1,6 +1,6 @@
 # DPP Data Extractor
 
-A service able to extract data from JSON, JSON-LD or RDF DPPs, and make them available in a storage to enable search over the decentralized repository.
+A service able to extract data from JSON, JSON-LD, RDF or AAS (Asset Administration Shell) DPPs, and make them available in a storage to enable search over the decentralized repository.
 
 © CIRPASS-2 Consortium, 2024-2027
 
@@ -20,7 +20,7 @@ This application leverages the Mock EU Registry repository to retrieve the lates
 
 - **RESTful API** for capabilities exposure and extraction configuration management
 - **Flexible Extraction Configuration** with runtime customization support
-- **Multi Format DPP support**: JSON, JSON-LD, RDF-XML and other RDF formats like Turtle, N3, N-Quads
+- **Multi Format DPP support**: JSON, JSON-LD, RDF-XML, other RDF formats (Turtle, N3, N-Quads), and **AAS JSON** (Asset Administration Shell, IDTA metamodel v3)
 - **Multiple database backends** (PostgreSQL, MariaDB)
 - **OpenID Connect authentication** with role-based access control
 
@@ -495,11 +495,22 @@ spec:
 
 ## Extraction Configuration
 
-The application uses a JSON configuration to determine how to extract values from DPPs. The configuration is organized into four top-level sections: `searchFields`, `knownOntology`, `noOntology`, and `unknownOntology`. The three strategy sections are not mutually exclusive: the extractor determines which strategy to apply based on the format and semantic content of each incoming DPP document, and applies the corresponding section of the configuration.
+The application uses a JSON configuration to determine how to extract values from DPPs. The configuration is organized into five top-level sections: `searchFields`, `knownOntology`, `noOntology`, `unknownOntology`, and `aasOntology`. The four strategy sections are not mutually exclusive: the extractor determines which strategy to apply based on the format and semantic content of each incoming DPP document, and applies the corresponding section of the configuration.
+
+### Strategy Selection
+
+The extractor inspects each incoming document and routes it to exactly one strategy according to the following priority order:
+
+1. **AAS JSON** — the document is a JSON root object whose `modelType` field equals one of `AssetAdministrationShellEnvironment`, `Submodel`, or `AssetAdministrationShell`. Detection is a single O(1) field lookup with no further inspection required.
+2. **Known Ontology** — the document is a JSON-LD object whose `@context` contains a URI matching `extractor.dpp.reference-ontology.contexts`, or whose `@vocab` matches `extractor.dpp.reference-ontology.vocabularies`.
+3. **Unknown Ontology** — the document is a JSON-LD object with a `@context` that does not match any reference ontology URI, but carries `@type` annotations that can anchor extraction.
+4. **Plain JSON** — any other JSON document with no semantic layer.
+
+AAS detection takes precedence over JSON-LD detection because an AAS environment document may legally contain a `@context` in some serialisation profiles, which would otherwise trigger an incorrect JSON-LD route.
 
 ### `searchFields`
 
-An array of objects that declares the complete set of fields the extractor will attempt to populate for each DPP. Every field name referenced in any of the three strategy sections must have a corresponding entry here. Fields not listed in `searchFields` are ignored even if matched by a strategy.
+An array of objects that declares the complete set of fields the extractor will attempt to populate for each DPP. Every field name referenced in any of the strategy sections must have a corresponding entry here. Fields not listed in `searchFields` are ignored even if matched by a strategy.
 
 Each entry supports the following properties:
 
@@ -593,6 +604,86 @@ The section contains a single `fields` object whose keys are `fieldName` values 
 }
 ```
 
+### `aasOntology`
+
+Configures extraction from **Asset Administration Shell (AAS) JSON** documents compliant with the IDTA metamodel v3 (IEC 63278). This strategy navigates the `submodels → submodelElements` tree using two complementary matching mechanisms applied in priority order for each configured field.
+
+#### AAS Document Detection
+
+A document is identified as AAS JSON when its root `modelType` field is one of:
+
+| `modelType` value                        | Description                                  |
+|------------------------------------------|----------------------------------------------|
+| `AssetAdministrationShellEnvironment`    | Full AAS environment (multiple submodels)    |
+| `Submodel`                               | Standalone submodel serialisation            |
+| `AssetAdministrationShell`               | AAS descriptor without submodel payload      |
+
+Detection is a single field lookup and takes precedence over all JSON-LD routes.
+
+#### Matching Mechanisms
+
+For each configured field, the extractor applies the following mechanisms in order, stopping at the first successful match:
+
+1. **`semanticId` scan** (preferred) — performs a full-document scan collecting all `SubmodelElement` nodes and checks each node's `semanticId.keys[].value` against the configured value. Matching is suffix-insensitive to tolerate ECLASS version suffixes (e.g. `0173-1#02-AAO677` matches both `#002` and `#004`). This mechanism is ontology-stable and works regardless of how the producer has named the submodel or its elements.
+
+2. **`idShortPath` navigation** (structural fallback) — navigates the submodel tree top-down by matching `idShort` values at each level. The first path segment identifies the target submodel, and the remaining segments navigate `submodelElements` (or `value` arrays for `SubmodelElementList`). This mechanism is useful when `semanticId` is absent, non-standard, or when targeting proprietary submodels.
+
+When both `semanticId` and `idShortPath` are configured for the same field, `semanticId` is always attempted first.
+
+#### Value Extraction
+
+Once a matching `SubmodelElement` node is found, the extractor reads its `value` field according to the node's `modelType`:
+
+| `modelType`              | Extraction behaviour                                                                                                         |
+|--------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| `Property`               | Reads `value` directly as a scalar.                                                                                          |
+| `MultiLanguageProperty`  | Reads the `text` field from the language entry matching `preferLanguage`. Falls back to the first available language entry.  |
+
+#### Field Specification
+
+The `aasOntology` section contains a single `fields` object whose keys are `fieldName` values from `searchFields`. Each field entry supports:
+
+| Property         | Required | Description                                                                                                                                                                                                                                                              |
+|------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `semanticId`     | no*      | The semantic ID value to match against `semanticId.keys[].value` of each `SubmodelElement`. Matching is suffix-insensitive: the configured value is matched if the element's semantic ID ends with it (case-insensitive), allowing version-suffix-agnostic configuration. |
+| `idShortPath`    | no*      | Ordered list of `idShort` segments. The first segment identifies the target submodel (or a submodel idShort prefix); subsequent segments navigate the `submodelElements` hierarchy. `SubmodelElementList` children are traversed automatically.                           |
+| `preferLanguage` | no       | BCP 47 language tag used for `MultiLanguageProperty` value selection. Defaults to `"en"`.                                                                                                                                                                                |
+
+*At least one of `semanticId` or `idShortPath` must be provided.
+
+#### Semantic ID References
+
+The table below lists the well-known ECLASS IRDIs and IDTA IRIs used in the default AAS configuration, along with the IDTA submodel template each one originates from. Version suffixes are intentionally omitted from configured values to ensure forward compatibility.
+
+| Field                | Semantic ID (configured, no version suffix)                                     | Source submodel template              |
+|----------------------|---------------------------------------------------------------------------------|---------------------------------------|
+| `manufacturerName`   | `0173-1#02-AAO677`                                                              | IDTA-02006 Digital Nameplate          |
+| `productName`        | `0173-1#02-AAW338`                                                              | IDTA-02006 Digital Nameplate          |
+| `codeValue`          | `https://admin-shell.io/ZVEI/TechnicalData/ProductClassId/1/1`                  | IDTA-02003 Technical Data             |
+| `codeSet`            | `https://admin-shell.io/ZVEI/TechnicalData/ClassificationSystem/1/1`            | IDTA-02003 Technical Data             |
+| `carbonFootprint`    | `0173-1#02-ABG855`                                                              | IDTA-02023 Carbon Footprint           |
+| `carbonFootprintUom` | `0173-1#02-ABG856`                                                              | IDTA-02023 Carbon Footprint           |
+| `weight`             | `0173-1#02-AAB419`                                                              | ECLASS (used in IDTA-02003)           |
+| `recyclingRate`      | `0173-1#02-ABE994`                                                              | ECLASS / IDTA-02035 Circularity (draft) |
+| `durability`         | `0173-1#02-AAY812`                                                              | ECLASS                                |
+| `energyConsumption`  | `0173-1#02-AAI667`                                                              | ECLASS (used in IDTA-02053/54)        |
+
+> **Note:** Semantic IDs for `recyclingRate`, `durability`, `energyConsumption`, and their companion unit fields are based on ECLASS IRDIs or early IDTA drafts. They will be updated when IDTA finalises the Circularity (IDTA-02035) and Energy Data Sheet (IDTA-02053/54) submodel templates.
+
+#### Example
+
+Extracting `manufacturerName` from an AAS Nameplate submodel using both mechanisms:
+
+```json
+"manufacturerName": {
+  "semanticId": "0173-1#02-AAO677",
+  "idShortPath": ["Nameplate", "ManufacturerName"],
+  "preferLanguage": "en"
+}
+```
+
+The extractor first scans all submodel elements for a `semanticId` ending in `0173-1#02-AAO677`. If found, it reads the `MultiLanguageProperty` value for language `"en"`. If the `semanticId` scan yields no result (e.g. the submodel omits semantic IDs), it falls back to navigating `submodels[idShort="Nameplate"] → submodelElements[idShort="ManufacturerName"]`.
+
 ### Default Configuration
 
 The application ships with a default configuration that extracts the following fields:
@@ -600,7 +691,8 @@ The application ships with a default configuration that extracts the following f
 - `productName` — product or model name
 - `codeValue` — product classification code (e.g. ECLASS, UNSPSC)
 - `codeSet` — URI of the classification scheme the code belongs to
-- `environmentalFootprint` / `environmentalFootprintUom` — aggregated environmental footprint value and unit
+- `manufacturerName` — legally registered manufacturer name
+- `carbonFootprint` / `carbonFootprintUom` — carbon footprint value and unit
 - `recyclingRate` / `recyclingRateUom` — recycling rate value and unit
 - `energyConsumption` / `energyConsumptionUom` — energy consumption value and unit
 - `weight` / `weightUom` — product weight and unit
@@ -901,8 +993,8 @@ The application ships with a default configuration that extracts the following f
       "weight": {
         "variants": ["weight", "weightG", "weightKg"],
         "variantsWithContext": {
-          "context": ["dimension", "dimensions", "physicalDimension","weight"],
-          "field": ["weight", "weightG", "weightKg"]
+          "context": ["dimension", "weight","dimensions", "physicalDimension"],
+          "field": ["weight", "weightG", "weightKg","numericalValue"]
         }
       },
       "weightUom": {
@@ -991,6 +1083,89 @@ The application ships with a default configuration that extracts the following f
         "typeHints": ["Durability", "ProductDurability", "LifeExpectancy"]
       }
     }
+  },
+  "aasOntology": {
+    "fields": {
+
+      "manufacturerName": {
+        "comment": "IDTA-02006 Nameplate. ECLASS 0173-1#02-AAO677 (ManufacturerName). Version suffix intentionally omitted to match #002, #003, #004.",
+        "semanticId": "0173-1#02-AAO677",
+        "idShortPath": ["Nameplate", "ManufacturerName"],
+        "preferLanguage": "en"
+      },
+
+      "productName": {
+        "comment": "IDTA-02006 Nameplate. ECLASS 0173-1#02-AAW338 (ManufacturerProductDesignation). Also try ManufacturerProductFamily as secondary path if empty.",
+        "semanticId": "0173-1#02-AAW338",
+        "idShortPath": ["Nameplate", "ManufacturerProductDesignation"],
+        "preferLanguage": "en"
+      },
+
+      "codeValue": {
+        "comment": "IDTA-02003 TechnicalData. admin-shell.io IRI for ProductClassId. Path targets first classification item. SML indexing (..Item00) is positional — first entry is the primary classification.",
+        "semanticId": "https://admin-shell.io/ZVEI/TechnicalData/ProductClassId/1/1",
+        "idShortPath": ["TechnicalData", "ProductClassifications", "ProductClassificationItem00", "ProductClassId"]
+      },
+
+      "codeSet": {
+        "comment": "IDTA-02003 TechnicalData. Paired with codeValue — same SML item, different property.",
+        "semanticId": "https://admin-shell.io/ZVEI/TechnicalData/ClassificationSystem/1/1",
+        "idShortPath": ["TechnicalData", "ProductClassifications", "ProductClassificationItem00", "ClassificationSystem"]
+      },
+
+      "carbonFootprint": {
+        "comment": "IDTA-02023 CarbonFootprint v1.0. ECLASS 0173-1#02-ABG855 (PcfCO2eq). Path descends into first ProductCarbonFootprint instance in the SML.",
+        "semanticId": "0173-1#02-ABG855",
+        "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "PcfCO2eq"]
+      },
+
+      "carbonFootprintUom": {
+        "comment": "IDTA-02023. ECLASS 0173-1#02-ABG856 (ReferenceImpactUnitForCalculation). Quantity unit for the PCF value, e.g. 'piece', 'kg'.",
+        "semanticId": "0173-1#02-ABG856",
+        "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "ReferenceImpactUnitForCalculation"]
+      },
+
+      "weight": {
+        "comment": "ECLASS 0173-1#02-AAB419 (net weight). Typically under TechnicalData/TechnicalProperties. No dedicated IDTA submodel template — idShortPath is a well-known convention.",
+        "semanticId": "0173-1#02-AAB419",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetWeight"]
+      },
+
+      "weightUom": {
+        "comment": "No standardized semanticId for unit companion properties in TechnicalData — units are encoded in the ECLASS ConceptDescription. idShortPath covers implementors who add an explicit unit property.",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetWeightUnit"]
+      },
+
+      "energyConsumption": {
+        "comment": "IDTA energy submodels (02054 Energy Consumption in Production, 02053 Energy Data Sheet) are under development / niche. ECLASS 0173-1#02-AAI667 covers nominal power. Fallback to common idShort conventions.",
+        "semanticId": "0173-1#02-AAI667",
+        "idShortPath": ["EnergyConsumption", "EnergyConsumptionDetails", "EnergyConsumptionValue"]
+      },
+
+      "energyConsumptionUom": {
+        "comment": "No stable IDTA standard semanticId for energy unit companion. idShortPath fallback only.",
+        "idShortPath": ["EnergyConsumption", "EnergyConsumptionDetails", "EnergyConsumptionUnit"]
+      },
+
+      "recyclingRate": {
+        "comment": "IDTA-02035-7 (Battery Passport Circularity) in development. No universal IRDI. Common convention used in sustainability submodels. Update when IDTA standardizes.",
+        "idShortPath": ["Circularity", "RecyclingInformation", "RecyclingRate"]
+      },
+
+      "recyclingRateUom": {
+        "idShortPath": ["Circularity", "RecyclingInformation", "RecyclingRateUnit"]
+      },
+
+      "durability": {
+        "comment": "No IDTA SMT yet. ECLASS 0173-1#02-AAY812 covers service life/durability in some releases — treat as advisory only. idShortPath based on ESPR-aligned DPP conventions.",
+        "semanticId": "0173-1#02-AAY812",
+        "idShortPath": ["Circularity", "DurabilityIndicators", "Durability"]
+      },
+
+      "durabilityUom": {
+        "idShortPath": ["Circularity", "DurabilityIndicators", "DurabilityUnit"]
+      }
+    }
   }
 }
 ```
@@ -1046,19 +1221,20 @@ GET /capabilities/v1
 
 ```json
 [
-  { "fieldName": "productName", "targetType": "STRING" },
-  { "fieldName": "codeValue", "targetType": "STRING" },
-  { "fieldName": "codeSet", "targetType": "STRING" },
-  { "fieldName": "environmentalFootprint", "targetType": "DECIMAL" },
-  { "fieldName": "environmentalFootprintUom", "targetType": "STRING", "dependsOn": "environmentalFootprint" },
-  { "fieldName": "recyclingRate", "targetType": "DECIMAL" },
-  { "fieldName": "recyclingRateUom", "targetType": "STRING", "dependsOn": "recyclingRate" },
-  { "fieldName": "energyConsumption", "targetType": "DECIMAL" },
-  { "fieldName": "energyConsumptionUom", "targetType": "STRING", "dependsOn": "energyConsumption" },
-  { "fieldName": "weight", "targetType": "DECIMAL" },
-  { "fieldName": "weightUom", "targetType": "STRING", "dependsOn": "weight" },
-  { "fieldName": "durability", "targetType": "DECIMAL" },
-  { "fieldName": "durabilityUom", "targetType": "STRING", "dependsOn": "durability" }
+  { "fieldName": "productName",          "targetType": "STRING"  },
+  { "fieldName": "codeValue",            "targetType": "STRING"  },
+  { "fieldName": "codeSet",              "targetType": "STRING"  },
+  { "fieldName": "manufacturerName",     "targetType": "STRING"  },
+  { "fieldName": "carbonFootprint",      "targetType": "DECIMAL" },
+  { "fieldName": "carbonFootprintUom",   "targetType": "STRING",  "dependsOn": "carbonFootprint"   },
+  { "fieldName": "recyclingRate",        "targetType": "DECIMAL" },
+  { "fieldName": "recyclingRateUom",     "targetType": "STRING",  "dependsOn": "recyclingRate"     },
+  { "fieldName": "energyConsumption",    "targetType": "DECIMAL" },
+  { "fieldName": "energyConsumptionUom", "targetType": "STRING",  "dependsOn": "energyConsumption" },
+  { "fieldName": "weight",               "targetType": "DECIMAL" },
+  { "fieldName": "weightUom",            "targetType": "STRING",  "dependsOn": "weight"            },
+  { "fieldName": "durability",           "targetType": "DECIMAL" },
+  { "fieldName": "durabilityUom",        "targetType": "STRING",  "dependsOn": "durability"        }
 ]
 ```
 
@@ -1078,51 +1254,31 @@ Content-Type: application/json
 
 {
   "searchFields": [
-    { "fieldName": "productName", "targetType": "STRING" },
+    { "fieldName": "productName",     "targetType": "STRING"  },
     { "fieldName": "carbonFootprint", "targetType": "DECIMAL" }
   ],
   "knownOntology": {
     "fields": {
-      "productName": {
-        "reference": { "key": "productName", "nativeType": "STRING" }
-      },
-      "carbonFootprint": {
-        "reference": {
-          "@type": "CarbonFootprint",
-          "key": "hasProperty",
-          "child": { "key": "numericalValue", "nativeType": "DECIMAL" }
-        }
-      }
+      "productName":     { "reference": { "key": "productName", "nativeType": "STRING" } },
+      "carbonFootprint": { "reference": { "@type": "CarbonFootprint", "key": "hasProperty", "child": { "key": "numericalValue", "nativeType": "DECIMAL" } } }
     }
   },
   "noOntology": {
     "fields": {
-      "productName": {
-        "variants": ["productName", "modelName"],
-        "variantsWithContext": {
-          "context": ["model", "product"],
-          "field": ["productName", "modelName", "name"]
-        }
-      },
-      "carbonFootprint": {
-        "variants": ["carbonFootprint"],
-        "variantsWithContext": {
-          "context": ["carbonFootprint"],
-          "field": ["value", "totalKgCo2", "kgCo2", "numericalValue"]
-        }
-      }
+      "productName":     { "variants": ["productName", "modelName"], "variantsWithContext": { "context": ["model", "product"], "field": ["productName", "modelName", "name"] } },
+      "carbonFootprint": { "variants": ["carbonFootprint"],          "variantsWithContext": { "context": ["carbonFootprint"],   "field": ["value", "totalKgCo2", "kgCo2", "numericalValue"] } }
     }
   },
   "unknownOntology": {
     "fields": {
-      "productName": {
-        "variants": ["productName", "modelName", "name"],
-        "typeHints": ["Product", "ProductData", "DPP", "DPPData", "Model", "ModelData"]
-      },
-      "carbonFootprint": {
-        "variants": ["numericalValue", "value", "totalKgCo2"],
-        "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission"]
-      }
+      "productName":     { "variants": ["productName", "modelName", "name"],          "typeHints": ["Product", "ProductData", "DPP", "DPPData", "Model", "ModelData"] },
+      "carbonFootprint": { "variants": ["numericalValue", "value", "totalKgCo2"],     "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission"] }
+    }
+  },
+  "aasOntology": {
+    "fields": {
+      "productName":     { "semanticId": "0173-1#02-AAW338", "idShortPath": ["Nameplate", "ManufacturerProductDesignation"], "preferLanguage": "en" },
+      "carbonFootprint": { "semanticId": "0173-1#02-ABG855", "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "PcfCO2eq"] }
     }
   }
 }

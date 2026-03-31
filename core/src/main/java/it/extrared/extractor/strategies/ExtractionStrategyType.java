@@ -18,6 +18,7 @@ package it.extrared.extractor.strategies;
 /** Enumeration of the supported extraction strategies. */
 public enum ExtractionStrategyType {
     PLAIN_JSON,
+    AAS_JSON,
     KNOW_ONTOLOGY,
     UNKNOWN_ONTOLOGY
 }

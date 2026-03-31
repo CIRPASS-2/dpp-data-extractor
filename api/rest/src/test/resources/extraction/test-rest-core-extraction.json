@@ -106,5 +106,26 @@
         "typeHints": ["Height","QuantitativeValue"]
       }
     }
+  },
+  "aasOntology": {
+    "fields": {
+      "productName": {
+        "semanticId": "0173-1#02-AAW338",
+        "idShortPath": ["Nameplate", "ManufacturerProductDesignation"],
+        "preferLanguage": "en"
+      },
+      "weight": {
+        "semanticId": "0173-1#02-AAB419",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetWeight"]
+      },
+      "carbonFootprint": {
+        "semanticId": "0173-1#02-ABG855",
+        "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "PcfCO2eq"]
+      },
+      "height": {
+        "semanticId": "0173-1#02-AAB419",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetHeight"]
+      }
+    }
   }
 }

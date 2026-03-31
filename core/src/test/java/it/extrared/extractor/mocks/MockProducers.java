@@ -54,6 +54,10 @@ public class MockProducers {
         Mockito.doReturn(mockRequest(ExtractionStrategyType.UNKNOWN_ONTOLOGY))
                 .when(webClient)
                 .getAbs(eq("http://localhost:8080/dpp3"));
+        Mockito.doReturn(mockRequest(ExtractionStrategyType.AAS_JSON))
+                .when(webClient)
+                .getAbs(eq("http://localhost:8080/dpp4"));
+
         return webClient;
     }
 
@@ -69,12 +73,13 @@ public class MockProducers {
         switch (type) {
             case PLAIN_JSON -> bytes = readResourceAsBytes("/example-dpp/dpp.json");
             case KNOW_ONTOLOGY -> bytes = readResourceAsBytes("/example-dpp/dpp-ld.json");
+            case AAS_JSON -> bytes = readResourceAsBytes("/example-dpp/dpp-aas.json");
             default -> bytes = readResourceAsBytes("/example-dpp/dpp-unknown-ld.json");
         }
         Buffer buffer = Buffer.buffer(bytes);
         HttpResponse<Buffer> response = Mockito.mock(HttpResponse.class);
         Mockito.doReturn(buffer).when(response).bodyAsBuffer();
-        if (type == ExtractionStrategyType.PLAIN_JSON) {
+        if (type == ExtractionStrategyType.PLAIN_JSON || type == ExtractionStrategyType.AAS_JSON) {
             Mockito.doReturn("application/json")
                     .when(response)
                     .getHeader(ArgumentMatchers.eq("Content-Type"));
