@@ -60,5 +60,18 @@
         "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission"]
       }
     }
+  },
+  "aasOntology": {
+    "fields": {
+      "productName": {
+        "semanticId": "0173-1#02-AAW338",
+        "idShortPath": ["Nameplate", "ManufacturerProductDesignation"],
+        "preferLanguage": "en"
+      },
+      "carbonFootprint": {
+        "semanticId": "0173-1#02-ABG855",
+        "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "PcfCO2eq"]
+      }
+    }
   }
 }

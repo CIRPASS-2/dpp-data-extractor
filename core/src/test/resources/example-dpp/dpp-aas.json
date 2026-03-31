@@ -1,0 +1,211 @@
+{
+  "modelType": "AssetAdministrationShellEnvironment",
+
+  "assetAdministrationShells": [
+    {
+      "modelType": "AssetAdministrationShell",
+      "id": "urn:example:aas:smartphone-001",
+      "idShort": "SmartphoneEcoPhoneXPro",
+      "assetInformation": {
+        "assetKind": "Instance",
+        "globalAssetId": "urn:epc:id:sgtin:0614141.112345.001",
+        "specificAssetIds": [
+          { "name": "GTIN",          "value": "8712345678901" },
+          { "name": "commodityCode", "value": "8517120000"   }
+        ]
+      },
+      "submodels": [
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:nameplate:smartphone-001"       }] },
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:technicaldata:smartphone-001"   }] },
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:carbonfootprint:smartphone-001" }] },
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:dppadmin:smartphone-001"        }] }
+      ]
+    }
+  ],
+
+  "submodels": [
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:nameplate:smartphone-001",
+      "idShort": "Nameplate",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/nameplate/3/0/Nameplate" }]
+      },
+      "submodelElements": [
+        {
+          "modelType": "MultiLanguageProperty",
+          "idShort": "ManufacturerName",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "0173-1#02-AAO677#002" }]
+          },
+          "value": [
+            { "language": "en", "text": "Alpha Electronics Inc." }
+          ]
+        },
+        {
+          "modelType": "MultiLanguageProperty",
+          "idShort": "ManufacturerProductDesignation",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "0173-1#02-AAW338#001" }]
+          },
+          "value": [
+            { "language": "en", "text": "EcoPhone X Pro AAS" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:technicaldata:smartphone-001",
+      "idShort": "TechnicalData",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2" }]
+      },
+      "submodelElements": [
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "TechnicalProperties",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/ZVEI/TechnicalData/MainSection/1/1" }]
+          },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "NetWeight",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [{ "type": "GlobalReference", "value": "0173-1#02-AAB419#012" }]
+              },
+              "valueType": "xs:decimal",
+              "value": "189.5"
+            },
+            {
+              "modelType": "Property",
+              "idShort": "NetWeightUnit",
+              "valueType": "xs:string",
+              "value": "g"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:carbonfootprint:smartphone-001",
+      "idShort": "CarbonFootprint",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/CarbonFootprint/CarbonFootprint/1/0" }]
+      },
+      "submodelElements": [
+        {
+          "modelType": "SubmodelElementList",
+          "idShort": "ProductCarbonFootprints",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprints/1/0" }]
+          },
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "modelType": "SubmodelElementCollection",
+              "idShort": "ProductCarbonFootprint00",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/1/0" }]
+              },
+              "value": [
+                {
+                  "modelType": "Property",
+                  "idShort": "PcfCO2eq",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [{ "type": "GlobalReference", "value": "0173-1#02-ABG855#003" }]
+                  },
+                  "valueType": "xs:decimal",
+                  "value": "45.8"
+                },
+                {
+                  "modelType": "Property",
+                  "idShort": "ReferenceImpactUnitForCalculation",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [{ "type": "GlobalReference", "value": "0173-1#02-ABG856#003" }]
+                  },
+                  "valueType": "xs:string",
+                  "value": "piece"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:dppadmin:smartphone-001",
+      "idShort": "DPPAdministration",
+      "displayName": [{ "language": "en", "text": "DPP Administration Metadata" }],
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "UniqueDPPID",
+          "valueType": "xs:string",
+          "value": "urn:uuid:a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "Granularity",
+          "valueType": "xs:string",
+          "value": "product"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "Status",
+          "valueType": "xs:string",
+          "value": "Active"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "SchemaVersion",
+          "valueType": "xs:string",
+          "value": "1.7.0"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "ValidFrom",
+          "valueType": "xs:dateTime",
+          "value": "2024-01-15T08:00:00Z"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "ValidUntil",
+          "valueType": "xs:dateTime",
+          "value": "2034-01-15T08:00:00Z"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "LastUpdate",
+          "valueType": "xs:dateTime",
+          "value": "2024-11-20T14:30:00Z"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "FacilityID",
+          "valueType": "xs:string",
+          "value": "FAC-IT-MI-001"
+        }
+      ]
+    }
+
+  ]
+}

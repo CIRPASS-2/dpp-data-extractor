@@ -379,5 +379,88 @@
         "typeHints": ["Durability", "ProductDurability", "LifeExpectancy"]
       }
     }
+  },
+  "aasOntology": {
+    "fields": {
+
+      "manufacturerName": {
+        "comment": "IDTA-02006 Nameplate. ECLASS 0173-1#02-AAO677 (ManufacturerName). Version suffix intentionally omitted to match #002, #003, #004.",
+        "semanticId": "0173-1#02-AAO677",
+        "idShortPath": ["Nameplate", "ManufacturerName"],
+        "preferLanguage": "en"
+      },
+
+      "productName": {
+        "comment": "IDTA-02006 Nameplate. ECLASS 0173-1#02-AAW338 (ManufacturerProductDesignation). Also try ManufacturerProductFamily as secondary path if empty.",
+        "semanticId": "0173-1#02-AAW338",
+        "idShortPath": ["Nameplate", "ManufacturerProductDesignation"],
+        "preferLanguage": "en"
+      },
+
+      "codeValue": {
+        "comment": "IDTA-02003 TechnicalData. admin-shell.io IRI for ProductClassId. Path targets first classification item. SML indexing (..Item00) is positional — first entry is the primary classification.",
+        "semanticId": "https://admin-shell.io/ZVEI/TechnicalData/ProductClassId/1/1",
+        "idShortPath": ["TechnicalData", "ProductClassifications", "ProductClassificationItem00", "ProductClassId"]
+      },
+
+      "codeSet": {
+        "comment": "IDTA-02003 TechnicalData. Paired with codeValue — same SML item, different property.",
+        "semanticId": "https://admin-shell.io/ZVEI/TechnicalData/ClassificationSystem/1/1",
+        "idShortPath": ["TechnicalData", "ProductClassifications", "ProductClassificationItem00", "ClassificationSystem"]
+      },
+
+      "carbonFootprint": {
+        "comment": "IDTA-02023 CarbonFootprint v1.0. ECLASS 0173-1#02-ABG855 (PcfCO2eq). Path descends into first ProductCarbonFootprint instance in the SML.",
+        "semanticId": "0173-1#02-ABG855",
+        "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "PcfCO2eq"]
+      },
+
+      "carbonFootprintUom": {
+        "comment": "IDTA-02023. ECLASS 0173-1#02-ABG856 (ReferenceImpactUnitForCalculation). Quantity unit for the PCF value, e.g. 'piece', 'kg'.",
+        "semanticId": "0173-1#02-ABG856",
+        "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "ReferenceImpactUnitForCalculation"]
+      },
+
+      "weight": {
+        "comment": "ECLASS 0173-1#02-AAB419 (net weight). Typically under TechnicalData/TechnicalProperties. No dedicated IDTA submodel template — idShortPath is a well-known convention.",
+        "semanticId": "0173-1#02-AAB419",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetWeight"]
+      },
+
+      "weightUom": {
+        "comment": "No standardized semanticId for unit companion properties in TechnicalData — units are encoded in the ECLASS ConceptDescription. idShortPath covers implementors who add an explicit unit property.",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetWeightUnit"]
+      },
+
+      "energyConsumption": {
+        "comment": "IDTA energy submodels (02054 Energy Consumption in Production, 02053 Energy Data Sheet) are under development / niche. ECLASS 0173-1#02-AAI667 covers nominal power. Fallback to common idShort conventions.",
+        "semanticId": "0173-1#02-AAI667",
+        "idShortPath": ["EnergyConsumption", "EnergyConsumptionDetails", "EnergyConsumptionValue"]
+      },
+
+      "energyConsumptionUom": {
+        "comment": "No stable IDTA standard semanticId for energy unit companion. idShortPath fallback only.",
+        "idShortPath": ["EnergyConsumption", "EnergyConsumptionDetails", "EnergyConsumptionUnit"]
+      },
+
+      "recyclingRate": {
+        "comment": "IDTA-02035-7 (Battery Passport Circularity) in development. No universal IRDI. Common convention used in sustainability submodels. Update when IDTA standardizes.",
+        "idShortPath": ["Circularity", "RecyclingInformation", "RecyclingRate"]
+      },
+
+      "recyclingRateUom": {
+        "idShortPath": ["Circularity", "RecyclingInformation", "RecyclingRateUnit"]
+      },
+
+      "durability": {
+        "comment": "No IDTA SMT yet. ECLASS 0173-1#02-AAY812 covers service life/durability in some releases — treat as advisory only. idShortPath based on ESPR-aligned DPP conventions.",
+        "semanticId": "0173-1#02-AAY812",
+        "idShortPath": ["Circularity", "DurabilityIndicators", "Durability"]
+      },
+
+      "durabilityUom": {
+        "idShortPath": ["Circularity", "DurabilityIndicators", "DurabilityUnit"]
+      }
+    }
   }
 }

@@ -1,52 +1,40 @@
 {
-  "searchFields":[
-    {
-      "fieldName": "productName",
-      "targetType": "STRING"
-    },
-    {
-      "fieldName": "weight",
-      "targetType": "DECIMAL"
-    },
-    {
-      "fieldName": "carbonFootprint",
-      "targetType": "DECIMAL"
-    },
-    {
-      "fieldName": "granularity",
-      "targetType": "STRING"
-    }
+  "searchFields": [
+    { "fieldName": "productName",     "targetType": "STRING"  },
+    { "fieldName": "weight",          "targetType": "DECIMAL" },
+    { "fieldName": "carbonFootprint", "targetType": "DECIMAL" },
+    { "fieldName": "granularity",     "targetType": "STRING"  }
   ],
-  "knownOntology":{
-    "fields":
-    {
+
+  "knownOntology": {
+    "fields": {
       "productName": {
         "reference": {
-          "key":"productName",
+          "key": "productName",
           "nativeType": "STRING"
         }
       },
       "weight": {
         "reference": {
-        "@type":"Weight",
-        "key": "hasProperty",
-        "child": {
-          "key":"numericalValue",
-          "nativeType": "DECIMAL"
-        }
-          }
-      },
-      "carbonFootprint":{
-        "reference": {
-          "@type":"CarbonFootprint",
+          "@type": "Weight",
           "key": "hasProperty",
           "child": {
-            "nativeType": "DECIMAL",
-            "key":"numericalValue"
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
           }
         }
       },
-      "granularity":{
+      "carbonFootprint": {
+        "reference": {
+          "@type": "CarbonFootprint",
+          "key": "hasProperty",
+          "child": {
+            "key": "numericalValue",
+            "nativeType": "DECIMAL"
+          }
+        }
+      },
+      "granularity": {
         "reference": {
           "@type": "DPP",
           "key": "hasDPP",
@@ -58,40 +46,45 @@
       }
     }
   },
+
   "noOntology": {
-    "fields":
-    {
+    "fields": {
       "productName": {
-        "variants":["productName","modelName"],
-        "variantsWithContext":{
-          "context": ["model","product"],
-          "field": ["productName","modelName","name"]
+        "variants": ["productName", "modelName"],
+        "variantsWithContext": {
+          "context": ["model", "product"],
+          "field": ["productName", "modelName", "name"]
         }
       },
       "weight": {
-        "variants": ["weight","weightG","weightKg"],
+        "variants": ["weight", "weightG", "weightKg"],
         "variantsWithContext": {
-          "context": ["dimension"],
-          "field": ["weight","weightg","weightkg"]
+          "context": ["dimension", "weight"],
+          "field": ["weight", "weightG", "weightKg", "numericalValue"]
         }
       },
       "carbonFootprint": {
         "variants": ["carbonFootprint"],
         "variantsWithContext": {
-          "context": ["carbonFootprint"],
-          "field": ["value","totalKgCo2","kgCo2","numericalValue"]
+          "context": ["carbonFootprint", "co2"],
+          "field": ["value", "totalKgCo2", "kgCo2", "numericalValue"]
         }
       },
       "granularity": {
-        "variants": ["granularity","granularityLevel"]
+        "variants": ["granularity", "granularityLevel"],
+        "variantsWithContext": {
+          "context": ["dpp", "digitalProductPassport", "hasDPP"],
+          "field": ["granularity", "granularityLevel", "granularityInfo"]
+        }
       }
     }
   },
+
   "unknownOntology": {
     "fields": {
       "productName": {
-        "variants": ["productName","modelName","name"],
-        "typeHints": ["Product","ProductData","DPP","DPPData","Model","ModelData"]
+        "variants": ["productName", "modelName", "name"],
+        "typeHints": ["Product", "ProductData", "DPP", "DPPData", "Model", "ModelData"]
       },
       "weight": {
         "variants": ["numericalValue", "value", "amount"],
@@ -102,8 +95,28 @@
         "typeHints": ["CarbonFootprint", "CO2Footprint", "CarbonEmission"]
       },
       "granularity": {
-        "variants": ["granularity","granularityLevel","granularityInfo"],
-        "typeHints": ["DPP","DigitalProductPassport"]
+        "variants": ["granularity", "granularityLevel", "granularityInfo"],
+        "typeHints": ["DPP", "DigitalProductPassport"]
+      }
+    }
+  },
+  "aasOntology": {
+    "fields": {
+      "productName": {
+        "semanticId": "0173-1#02-AAW338",
+        "idShortPath": ["Nameplate", "ManufacturerProductDesignation"],
+        "preferLanguage": "en"
+      },
+      "weight": {
+        "semanticId": "0173-1#02-AAB419",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetWeight"]
+      },
+      "carbonFootprint": {
+        "semanticId": "0173-1#02-ABG855",
+        "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "PcfCO2eq"]
+      },
+      "granularity": {
+        "idShortPath": ["DPPAdministration", "Granularity"]
       }
     }
   }
