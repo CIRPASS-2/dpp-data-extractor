@@ -45,6 +45,9 @@ public class SearchKeyExtractor {
     private static final String VOCAB = "@vocab";
     private static final Logger LOGGER = Logger.getLogger(SearchKeyExtractor.class);
 
+    private static final Set<String> AAS_ROOT_MODEL_TYPES =
+            Set.of("AssetAdministrationShellEnvironment", "Submodel", "AssetAdministrationShell");
+
     @Inject ExtractionConfigCache configCache;
 
     @Inject ExtractorConfig config;
@@ -98,6 +101,10 @@ public class SearchKeyExtractor {
             return ExtractionStrategyType.PLAIN_JSON;
         }
 
+        if (isAasDocument(jsonLd)) {
+            return ExtractionStrategyType.AAS_JSON;
+        }
+
         if (!jsonLd.containsKey(CONTEXT)) {
             return ExtractionStrategyType.PLAIN_JSON;
         }
@@ -116,6 +123,11 @@ public class SearchKeyExtractor {
         }
 
         return ExtractionStrategyType.UNKNOWN_ONTOLOGY;
+    }
+
+    private boolean isAasDocument(JsonObject root) {
+        JsonValue modelType = root.get("modelType");
+        return modelType instanceof JsonString js && AAS_ROOT_MODEL_TYPES.contains(js.getString());
     }
 
     private boolean matchesContextContent(JsonValue contextValue, List<String> contexts) {

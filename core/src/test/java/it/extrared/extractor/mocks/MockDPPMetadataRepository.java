@@ -52,6 +52,11 @@ public class MockDPPMetadataRepository implements DPPMetadataRepository {
         entry1.setUpi("76544567");
         entry1.setModifiedAt(LocalDateTime.now());
         entry1.setRegistryId(registryIds.getFirst());
-        return Uni.createFrom().item(List.of(entry1));
+        DPPMetadataEntry entry2 = new DPPMetadataEntry();
+        entry2.setLiveURL("http://localhost:8080/dpp4");
+        entry2.setUpi("665445688");
+        entry2.setModifiedAt(LocalDateTime.now());
+        entry2.setRegistryId(registryIds.getFirst());
+        return Uni.createFrom().item(List.of(entry2));
     }
 }

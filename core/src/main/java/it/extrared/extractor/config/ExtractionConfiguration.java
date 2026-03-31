@@ -15,6 +15,7 @@
  */
 package it.extrared.extractor.config;
 
+import it.extrared.extractor.config.field.AasFieldSpec;
 import it.extrared.extractor.config.field.FieldType;
 import it.extrared.extractor.config.field.SearchField;
 import it.extrared.extractor.exceptions.InvalidExtractionConfigException;
@@ -38,6 +39,8 @@ public class ExtractionConfiguration {
     private NoOntology noOntology;
 
     private UnknownOntology unknownOntology;
+
+    private AasOntology aasOntology;
 
     /**
      * @return the Known Ontology configuration.
@@ -126,6 +129,7 @@ public class ExtractionConfiguration {
         KnownOntology knownOntology = getKnownOntology();
         UnknownOntology unknownOntology = getUnknownOntology();
         NoOntology noOntology = getNoOntology();
+        AasOntology aasOntology = getAasOntology();
         if (knownOntology == null)
             throw new InvalidExtractionConfigException(
                     "Known Ontology configuration must be provided.");
@@ -135,11 +139,15 @@ public class ExtractionConfiguration {
         if (unknownOntology == null)
             throw new InvalidExtractionConfigException(
                     "Unknown Ontology configuration must be provided.");
+        if (aasOntology == null)
+            throw new InvalidExtractionConfigException(
+                    "AAS Ontology configuration must be provided.");
 
         checkSpecFieldNames(KnownOntology.class, knownOntology.getFields().keySet(), targetTypes);
         checkSpecFieldNames(
                 UnknownOntology.class, unknownOntology.getFields().keySet(), targetTypes);
         checkSpecFieldNames(NoOntology.class, noOntology.getFields().keySet(), targetTypes);
+        checkSpecFieldNames(AasFieldSpec.class, aasOntology.getFields().keySet(), targetTypes);
     }
 
     private void checkSpecFieldNames(
@@ -151,19 +159,12 @@ public class ExtractionConfiguration {
                                 .formatted(subConfigType.getSimpleName(), k));
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        ExtractionConfiguration that = (ExtractionConfiguration) o;
-        return Objects.equals(searchFields, that.searchFields)
-                && Objects.equals(knownOntology, that.knownOntology)
-                && Objects.equals(noOntology, that.noOntology)
-                && Objects.equals(unknownOntology, that.unknownOntology);
+    public AasOntology getAasOntology() {
+        return aasOntology;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(searchFields, knownOntology, noOntology, unknownOntology);
+    public void setAasOntology(AasOntology aasOntology) {
+        this.aasOntology = aasOntology;
     }
 
     @Override
@@ -177,6 +178,24 @@ public class ExtractionConfiguration {
                 + noOntology
                 + ", unknownOntology="
                 + unknownOntology
+                + ", assOntology="
+                + aasOntology
                 + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ExtractionConfiguration that = (ExtractionConfiguration) o;
+        return Objects.equals(searchFields, that.searchFields)
+                && Objects.equals(knownOntology, that.knownOntology)
+                && Objects.equals(noOntology, that.noOntology)
+                && Objects.equals(unknownOntology, that.unknownOntology)
+                && Objects.equals(aasOntology, that.aasOntology);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(searchFields, knownOntology, noOntology, unknownOntology, aasOntology);
     }
 }

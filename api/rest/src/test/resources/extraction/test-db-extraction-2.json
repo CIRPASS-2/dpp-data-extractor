@@ -35,5 +35,14 @@
         "typeHints": ["Product","ProductData","DPP","DPPData","Model","ModelData"]
       }
     }
+  },
+  "aasOntology": {
+    "fields": {
+      "productName": {
+        "semanticId": "0173-1#02-AAW338",
+        "idShortPath": ["Nameplate", "ManufacturerProductDesignation"],
+        "preferLanguage": "en"
+      }
+    }
   }
 }
