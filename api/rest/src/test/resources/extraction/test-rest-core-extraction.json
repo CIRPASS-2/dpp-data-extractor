@@ -122,8 +122,9 @@
         "semanticId": "0173-1#02-ABG855",
         "idShortPath": ["CarbonFootprint", "ProductCarbonFootprints", "ProductCarbonFootprint00", "PcfCO2eq"]
       },
-      "granularity": {
-        "idShortPath": ["DPPAdministration", "Granularity"]
+      "height": {
+        "semanticId": "0173-1#02-AAB419",
+        "idShortPath": ["TechnicalData", "TechnicalProperties", "NetHeight"]
       }
     }
   }
