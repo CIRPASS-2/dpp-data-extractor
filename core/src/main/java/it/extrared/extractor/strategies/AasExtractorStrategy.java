@@ -12,6 +12,7 @@ import it.extrared.extractor.utils.JsonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.json.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import org.jboss.logging.Logger;
 
 /**
@@ -46,6 +47,7 @@ public class AasExtractorStrategy implements SearchKeyExtractorStrategy {
     private static final String VALUE = "value";
     private static final String SEMANTIC_ID = "semanticId";
     private static final String KEYS = "keys";
+    private static final Pattern IRDI_VERSION_SUFFIX = Pattern.compile("#\\d+$");
     private static final String LANGUAGE = "language";
     private static final String TEXT = "text";
 
@@ -160,7 +162,15 @@ public class AasExtractorStrategy implements SearchKeyExtractorStrategy {
 
     /**
      * Checks if {@code semanticId.keys[].value} of the element matches the configured semantic ID.
-     * Matching is suffix-insensitive to tolerate version suffixes (e.g. {@code #002}).
+     * Two tolerances let version-less configured targets (e.g. {@code 0173-1#02-AAO677}) match
+     * real-world AAS values:
+     *
+     * <ul>
+     *   <li>a leading IRI prefix on the AAS value is tolerated via {@code endsWith};
+     *   <li>a trailing eCl@ss/IRDI version suffix on the AAS value (e.g. {@code
+     *       0173-1#02-AAO677#002}) is tolerated by also comparing the value with that suffix
+     *       stripped — {@code endsWith} alone cannot see past it.
+     * </ul>
      */
     private boolean matchesSemanticId(JsonObject element, String targetSemanticId) {
         JsonObject semanticIdObj = getObject(element, SEMANTIC_ID);
@@ -171,15 +181,32 @@ public class AasExtractorStrategy implements SearchKeyExtractorStrategy {
             if (key.getValueType() != JsonValue.ValueType.OBJECT) continue;
             JsonValue keyValue = key.asJsonObject().get(VALUE);
             if (keyValue instanceof JsonString js) {
-                // exact match OR the AAS value ends with our target (version-suffix tolerant)
                 String candidate = js.getString();
-                if (candidate.equalsIgnoreCase(targetSemanticId)
-                        || candidate.toUpperCase().endsWith(targetSemanticId.toUpperCase())) {
+                if (matchesTarget(candidate, targetSemanticId)
+                        || matchesTarget(withoutVersionSuffix(candidate), targetSemanticId)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * Exact match (case-insensitive) OR the AAS value ends with the target (IRI-prefix tolerant).
+     */
+    private boolean matchesTarget(String candidate, String target) {
+        return candidate.equalsIgnoreCase(target)
+                || candidate.toUpperCase().endsWith(target.toUpperCase());
+    }
+
+    /**
+     * Strips a trailing IRDI version segment ({@code 0173-1#02-AAO677#002} → {@code
+     * 0173-1#02-AAO677}). Applied only when another {@code #} remains, so plain IRIs with a numeric
+     * fragment are left untouched.
+     */
+    private String withoutVersionSuffix(String semanticId) {
+        String stripped = IRDI_VERSION_SUFFIX.matcher(semanticId).replaceFirst("");
+        return stripped.contains("#") ? stripped : semanticId;
     }
 
     // -------------------------------------------------------------------------

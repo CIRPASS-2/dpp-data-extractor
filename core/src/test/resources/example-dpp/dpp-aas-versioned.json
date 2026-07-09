@@ -1,0 +1,183 @@
+{
+  "modelType": "AssetAdministrationShellEnvironment",
+
+  "assetAdministrationShells": [
+    {
+      "modelType": "AssetAdministrationShell",
+      "id": "urn:example:aas:smartphone-002",
+      "idShort": "SmartphoneEcoPhoneXProVendor",
+      "assetInformation": {
+        "assetKind": "Instance",
+        "globalAssetId": "urn:epc:id:sgtin:0614141.112345.002",
+        "specificAssetIds": [
+          { "name": "GTIN",          "value": "8712345678901" },
+          { "name": "commodityCode", "value": "8517120000"   }
+        ]
+      },
+      "submodels": [
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:nameplate:smartphone-002"       }] },
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:technicaldata:smartphone-002"   }] },
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:carbonfootprint:smartphone-002" }] },
+        { "type": "ExternalReference", "keys": [{ "type": "Submodel", "value": "urn:example:sm:dppadmin:smartphone-002"        }] }
+      ]
+    }
+  ],
+
+  "_comment": "Same data as dpp-aas.json, but with vendor-specific (non-standard) idShorts and versioned eCl@ss semanticIds (the form real IDTA submodels carry, e.g. 0173-1#02-AAW338#001). Extraction of productName/weight/carbonFootprint must succeed via the semanticId scan alone: the idShort-path fallback cannot match these names. Only 'granularity' (configured by idShortPath alone) keeps its standard idShorts.",
+
+  "submodels": [
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:nameplate:smartphone-002",
+      "idShort": "VendorNameplate",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/nameplate/3/0/Nameplate" }]
+      },
+      "submodelElements": [
+        {
+          "modelType": "MultiLanguageProperty",
+          "idShort": "BrandName",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "0173-1#02-AAO677#002" }]
+          },
+          "value": [
+            { "language": "en", "text": "Alpha Electronics Inc." }
+          ]
+        },
+        {
+          "modelType": "MultiLanguageProperty",
+          "idShort": "ProductDesignation",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "0173-1#02-AAW338#001" }]
+          },
+          "value": [
+            { "language": "en", "text": "EcoPhone X Pro AAS" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:technicaldata:smartphone-002",
+      "idShort": "TechData",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2" }]
+      },
+      "submodelElements": [
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "GeneralProperties",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/ZVEI/TechnicalData/MainSection/1/1" }]
+          },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "ProductNetWeight",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [{ "type": "GlobalReference", "value": "0173-1#02-AAB419#012" }]
+              },
+              "valueType": "xs:decimal",
+              "value": "189.5"
+            },
+            {
+              "modelType": "Property",
+              "idShort": "ProductNetWeightUnit",
+              "valueType": "xs:string",
+              "value": "g"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:carbonfootprint:smartphone-002",
+      "idShort": "PCF",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/CarbonFootprint/CarbonFootprint/1/0" }]
+      },
+      "submodelElements": [
+        {
+          "modelType": "SubmodelElementList",
+          "idShort": "Footprints",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprints/1/0" }]
+          },
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "modelType": "SubmodelElementCollection",
+              "idShort": "Footprint00",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/1/0" }]
+              },
+              "value": [
+                {
+                  "modelType": "Property",
+                  "idShort": "CO2eq",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [{ "type": "GlobalReference", "value": "0173-1#02-ABG855#003" }]
+                  },
+                  "valueType": "xs:decimal",
+                  "value": "45.8"
+                },
+                {
+                  "modelType": "Property",
+                  "idShort": "CO2eqUnit",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [{ "type": "GlobalReference", "value": "0173-1#02-ABG856#003" }]
+                  },
+                  "valueType": "xs:string",
+                  "value": "piece"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "modelType": "Submodel",
+      "id": "urn:example:sm:dppadmin:smartphone-002",
+      "idShort": "DPPAdministration",
+      "displayName": [{ "language": "en", "text": "DPP Administration Metadata" }],
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "UniqueDPPID",
+          "valueType": "xs:string",
+          "value": "urn:uuid:b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "Granularity",
+          "valueType": "xs:string",
+          "value": "product"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "Status",
+          "valueType": "xs:string",
+          "value": "Active"
+        }
+      ]
+    }
+
+  ]
+}
