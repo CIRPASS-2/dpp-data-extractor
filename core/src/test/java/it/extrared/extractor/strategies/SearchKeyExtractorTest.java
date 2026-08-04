@@ -62,6 +62,28 @@ public class SearchKeyExtractorTest {
 
     @Test
     @RunOnVertxContext
+    public void extractFromAASWithVersionedSemanticIds(UniAsserter uniAsserter) throws IOException {
+        // Same data as dpp-aas.json, but with vendor-specific idShorts and versioned eCl@ss
+        // semanticIds (e.g. 0173-1#02-AAW338#001) — the form real IDTA submodels carry. The
+        // idShort-path fallback cannot match here, so extraction must succeed via the
+        // semanticId scan alone; 'granularity' (idShortPath-only) keeps working as before.
+        try (InputStream is =
+                getClass().getResourceAsStream("/example-dpp/dpp-aas-versioned.json")) {
+            Uni<Map<String, Object>> result = searchKeyExtractor.extractSearchKeys(is);
+            uniAsserter.assertThat(
+                    () -> result,
+                    r -> {
+                        assertEquals(4, r.size());
+                        assertEquals("product", r.get("granularity"));
+                        assertEquals(45.8, r.get("carbonFootprint"));
+                        assertEquals(189.5, r.get("weight"));
+                        assertEquals("EcoPhone X Pro AAS", r.get("productName"));
+                    });
+        }
+    }
+
+    @Test
+    @RunOnVertxContext
     public void extractFromJsonLd(UniAsserter uniAsserter) throws IOException {
         try (InputStream is = getClass().getResourceAsStream("/example-dpp/dpp-ld.json")) {
             Uni<Map<String, Object>> result = searchKeyExtractor.extractSearchKeys(is);
